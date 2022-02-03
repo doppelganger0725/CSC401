@@ -9,13 +9,15 @@
 #  * Copyright (c) 2020 Frank Rudzicz
  
 
+import string
 import sys
 import argparse
 import os
 import json
 import re
 import spacy
-
+import html
+import string
 
 nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
 nlp.add_pipe('sentencizer')
@@ -38,16 +40,28 @@ def preproc1(comment , steps=range(1, 6)):
         modComm = re.sub(r"\n{1,}", " ", modComm)
 
     if 2 in steps:  # unescape html
-        print("TODO")
+        modComm = html.unescape(modComm)
+        #print("TODO")
 
     if 3 in steps:  # remove URLs
         modComm = re.sub(r"\b(http:\/\/|https:\/\/|www\.)\S+", "", modComm)
         
     if 4 in steps: #remove duplicate spaces.
-        print("TODO") 
+        re.sub(r"\s+", " ", modComm)
+        #print("TODO")
 
     if 5 in steps:
-        print("TODO")
+        newcomm = ""
+        doc = nlp(modComm)
+        for sent in doc.sents:
+            ## split sentence
+            print(sent.text)
+            for token in sent: 
+                print(token.text, token.lemma_, token.pos_, token.tag_, token.dep_,token.shape_, token.is_alpha, token.is_stop)
+                newcomm += token.text + "/" + token.tag_ + " "
+            newcomm = newcomm[:-1]
+            #add new line after each sentence
+            newcomm += "\n"
         # TODO: get Spacy document for modComm
         
         # TODO: use Spacy document for modComm to create a string.
@@ -83,18 +97,20 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Process each .')
-    parser.add_argument('ID', metavar='N', type=int, nargs=1,
-                        help='your student ID')
-    parser.add_argument("-o", "--output", help="Directs the output to a filename of your choice", required=True)
-    parser.add_argument("--max", type=int, help="The maximum number of comments to read from each file", default=10000)
-    parser.add_argument("--a1_dir", help="The directory for A1. Should contain subdir data. Defaults to the directory for A1 on cdf.", default='/u/cs401/A1')
+    comment = "I know words. I have the best words"
+    preproc1(comment,5)
+    # parser = argparse.ArgumentParser(description='Process each .')
+    # parser.add_argument('ID', metavar='N', type=int, nargs=1,
+    #                     help='your student ID')
+    # parser.add_argument("-o", "--output", help="Directs the output to a filename of your choice", required=True)
+    # parser.add_argument("--max", type=int, help="The maximum number of comments to read from each file", default=10000)
+    # parser.add_argument("--a1_dir", help="The directory for A1. Should contain subdir data. Defaults to the directory for A1 on cdf.", default='/u/cs401/A1')
     
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
-    if (args.max > 200272):
-        print( "Error: If you want to read more than 200,272 comments per file, you have to read them all." )
-        sys.exit(1)
+    # if (args.max > 200272):
+    #     print( "Error: If you want to read more than 200,272 comments per file, you have to read them all." )
+    #     sys.exit(1)
     
-    indir = os.path.join(args.a1_dir, 'data')
-    main(args)
+    # indir = os.path.join(args.a1_dir, 'data')
+    # main(args)
