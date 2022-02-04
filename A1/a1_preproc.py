@@ -100,7 +100,7 @@ def main(args):
             startIndex = ID % len(data)
             end = startIndex + max
             i = startIndex
-            if end < len(data):
+            if end <= len(data):
                 #no circle
                 while(i < end):
                     info = data[i]
@@ -110,7 +110,7 @@ def main(args):
                     i+=1
             else:
                 #circle 
-                left = end - len(data) + 1
+                left = end - len(data)
                 while(i < len(data)):
                     info = data[i]
                     j = json.loads(info)
