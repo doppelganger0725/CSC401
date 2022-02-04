@@ -74,7 +74,6 @@ def preproc1(comment , steps=range(1, 6)):
             #add new line after each sentence
             newcomm += "\n"
         modComm = newcomm
-        print(modComm)
         # TODO: get Spacy document for modComm
         
         # TODO: use Spacy document for modComm to create a string.
@@ -95,7 +94,7 @@ def main(args):
 
             data = json.load(open(fullFile))
 
-            ID = args.ID
+            ID = args.ID[0]
             max = args.max
             startIndex = ID % len(data)
             end = startIndex + max
@@ -139,8 +138,8 @@ def main(args):
 
 
 if __name__ == "__main__":
-    comment = "I know words. I've got the best PENS and Books."
-    preproc1(comment,[5])
+    # comment = "I know words. I've got the best PENS and Books."
+    # preproc1(comment,[5])
     parser = argparse.ArgumentParser(description='Process each .')
     parser.add_argument('ID', metavar='N', type=int, nargs=1,
                         help='your student ID')
