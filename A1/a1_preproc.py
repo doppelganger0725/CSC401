@@ -106,7 +106,7 @@ def main(args):
                     info = data[i]
                     j = json.loads(info)
                     processed = {"id":j["id"], "body":preproc1(j["body"]),"cat": file}
-                    allOutput.append[processed]
+                    allOutput.append(processed)
                     i+=1
             else:
                 #circle 
@@ -115,13 +115,13 @@ def main(args):
                     info = data[i]
                     j = json.loads(info)
                     processed = {"id":j["id"], "body":preproc1(j["body"]),"cat": file}
-                    allOutput.append[processed]
+                    allOutput.append(processed)
                     i+=1
                 k = 0 
                 while(k != left):
                     j = json.loads(data[k])
                     processed = {"id":j["id"], "body":preproc1(j["body"]),"cat": file}
-                    allOutput.append[processed]
+                    allOutput.append(processed)
                     k +=1
                 
            
