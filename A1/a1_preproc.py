@@ -74,7 +74,7 @@ def preproc1(comment , steps=range(1, 6)):
             #add new line after each sentence
             newcomm += "\n"
         modComm = newcomm
-    
+        print(modComm)
         # TODO: get Spacy document for modComm
         
         # TODO: use Spacy document for modComm to create a string.
@@ -102,7 +102,7 @@ def main(args):
             i = startIndex
             if end < len(data):
                 #no circle
-                while(i != end):
+                while(i < end):
                     info = data[i]
                     j = json.loads(info)
                     processed = {"id":j["id"], "body":preproc1(j["body"]),"cat": file}
@@ -111,14 +111,14 @@ def main(args):
             else:
                 #circle 
                 left = end - len(data) + 1
-                while(i != len(data)):
+                while(i < len(data)):
                     info = data[i]
                     j = json.loads(info)
                     processed = {"id":j["id"], "body":preproc1(j["body"]),"cat": file}
                     allOutput.append(processed)
                     i+=1
                 k = 0 
-                while(k != left):
+                while(k < left):
                     j = json.loads(data[k])
                     processed = {"id":j["id"], "body":preproc1(j["body"]),"cat": file}
                     allOutput.append(processed)
@@ -141,18 +141,18 @@ def main(args):
 if __name__ == "__main__":
     comment = "I know words. I've got the best PENS and Books."
     preproc1(comment,[5])
-    # parser = argparse.ArgumentParser(description='Process each .')
-    # parser.add_argument('ID', metavar='N', type=int, nargs=1,
-    #                     help='your student ID')
-    # parser.add_argument("-o", "--output", help="Directs the output to a filename of your choice", required=True)
-    # parser.add_argument("--max", type=int, help="The maximum number of comments to read from each file", default=10000)
-    # parser.add_argument("--a1_dir", help="The directory for A1. Should contain subdir data. Defaults to the directory for A1 on cdf.", default='/u/cs401/A1')
+    parser = argparse.ArgumentParser(description='Process each .')
+    parser.add_argument('ID', metavar='N', type=int, nargs=1,
+                        help='your student ID')
+    parser.add_argument("-o", "--output", help="Directs the output to a filename of your choice", required=True)
+    parser.add_argument("--max", type=int, help="The maximum number of comments to read from each file", default=10000)
+    parser.add_argument("--a1_dir", help="The directory for A1. Should contain subdir data. Defaults to the directory for A1 on cdf.", default='/u/cs401/A1')
     
-    # args = parser.parse_args()
+    args = parser.parse_args()
 
-    # if (args.max > 200272):
-    #     print( "Error: If you want to read more than 200,272 comments per file, you have to read them all." )
-    #     sys.exit(1)
+    if (args.max > 200272):
+        print( "Error: If you want to read more than 200,272 comments per file, you have to read them all." )
+        sys.exit(1)
     
-    # indir = os.path.join(args.a1_dir, 'data')
-    # main(args)
+    indir = os.path.join(args.a1_dir, 'data')
+    main(args)
