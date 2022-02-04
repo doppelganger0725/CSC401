@@ -9,6 +9,7 @@
 #  * Copyright (c) 2020 Frank Rudzicz
  
 
+from ast import While
 import string
 import sys
 import argparse
@@ -55,13 +56,25 @@ def preproc1(comment , steps=range(1, 6)):
         doc = nlp(modComm)
         for sent in doc.sents:
             ## split sentence
-            print(sent.text)
             for token in sent: 
-                print(token.text, token.lemma_, token.pos_, token.tag_, token.dep_,token.shape_, token.is_alpha, token.is_stop)
-                newcomm += token.text + "/" + token.tag_ + " "
+                # print(token.text, token.lemma_, token.pos_, token.tag_, token.dep_,token.shape_, token.is_alpha, token.is_stop, "\n")
+                if str(token).isupper():
+                    #check upper case token 
+                    if token.lemma_[0] == "-" and str(token)[0] != "-":
+                        #check lemma begin with "-" and token no "-"
+                        newcomm += token.text.upper()+ "/" + token.tag_ + " "
+                    else:
+                        newcomm += token.lemma_.upper()+ "/" + token.tag_ + " "
+                else:
+                    if token.lemma_[0] == "-" and str(token)[0] != "-":
+                        newcomm += token.text + "/" + token.tag_ + " "
+                    else:
+                        newcomm += token.lemma_ + "/" + token.tag_ + " "
             newcomm = newcomm[:-1]
             #add new line after each sentence
             newcomm += "\n"
+        modComm = newcomm
+    
         # TODO: get Spacy document for modComm
         
         # TODO: use Spacy document for modComm to create a string.
@@ -70,7 +83,6 @@ def preproc1(comment , steps=range(1, 6)):
         #    * Split tokens with spaces.
         #    * Write "/POS" after each token.
             
-    
     return modComm
 
 
@@ -83,6 +95,36 @@ def main(args):
 
             data = json.load(open(fullFile))
 
+            ID = args.ID
+            max = args.max
+            startIndex = ID % len(data)
+            end = startIndex + max
+            i = startIndex
+            if end < len(data):
+                #no circle
+                while(i != end):
+                    info = data[i]
+                    j = json.loads(info)
+                    processed = {"id":j["id"], "body":preproc1(j["body"]),"cat": file}
+                    allOutput.append[processed]
+                    i+=1
+            else:
+                #circle 
+                left = end - len(data) + 1
+                while(i != len(data)):
+                    info = data[i]
+                    j = json.loads(info)
+                    processed = {"id":j["id"], "body":preproc1(j["body"]),"cat": file}
+                    allOutput.append[processed]
+                    i+=1
+                k = 0 
+                while(k != left):
+                    j = json.loads(data[k])
+                    processed = {"id":j["id"], "body":preproc1(j["body"]),"cat": file}
+                    allOutput.append[processed]
+                    k +=1
+                
+           
             # TODO: select appropriate args.max lines
             # TODO: read those lines with something like `j = json.loads(line)`
             # TODO: choose to retain fields from those lines that are relevant to you
@@ -97,8 +139,8 @@ def main(args):
 
 
 if __name__ == "__main__":
-    comment = "I know words. I have the best words"
-    preproc1(comment,5)
+    comment = "I know words. I've got the best PENS and Books."
+    preproc1(comment,[5])
     # parser = argparse.ArgumentParser(description='Process each .')
     # parser.add_argument('ID', metavar='N', type=int, nargs=1,
     #                     help='your student ID')
