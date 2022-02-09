@@ -11,6 +11,8 @@
 import numpy as np
 import argparse
 import json
+import string 
+import csv
 
 # Provided wordlists.
 FIRST_PERSON_PRONOUNS = {
@@ -27,7 +29,33 @@ SLANG = {
     'afn', 'bbs', 'cya', 'ez', 'f2f', 'gtr', 'ic', 'jk', 'k', 'ly', 'ya',
     'nm', 'np', 'plz', 'ru', 'so', 'tc', 'tmi', 'ym', 'ur', 'u', 'sol', 'fml'}
 
+FUTURE_TENSE = ["'ll","will", "gonna"]
 
+COMMON_NOUNS = ["NN","NNS"]
+
+PROPER_NOUNS = ["NNP","NNPS"]
+
+ADVERBS = ["RB", "RBR", "RBS"]
+
+WH_WORDS = ["WDT", "WP", "WP$", "WRB"]
+
+PAST_TENSE = ["VBD", "VBN"]
+
+COORDINATING_CONJUN = ["CC"]
+
+#Read wordlist CSV file to dict
+
+Bristol = open("/u/cs401/Wordlists/BristolNorms+GilhoolyLogie.csv")
+Warriner = open("/u/cs401/Wordlists/Ratings_Warriner_et_al.csv")
+
+reader1 = csv.reader(Bristol)
+Bristol_dict = {}
+for row in reader1:
+    Bristol_dict[row[1]] = {"AoA": row[3], "IMG": row[4], "FAM":row[5]}
+reader2 = csv.reader(Warriner)
+Warriner_dict = {}
+for row in reader2:
+    Warriner_dict[row[1]] = {"V.Mean.Sum": row[2], "A.Mean.Sum": row[5], "D.Mean.Sum": row[8]}
 def extract1(comment):
     ''' This function extracts features from a single comment
 
@@ -40,7 +68,152 @@ def extract1(comment):
     # TODO: Extract features that rely on capitalization.
     # TODO: Lowercase the text in comment. Be careful not to lowercase the tags. (e.g. "Dog/NN" -> "dog/NN").
     # TODO: Extract features that do not rely on capitalization.
-    print('TODO')
+
+    uppercase = 0
+    first_pro = 0
+    second_pro = 0
+    third_pro = 0
+    coord_conj = 0
+    past_tense = 0
+    future_tense = 0
+    commas = 0
+    multi_pun = 0
+    common_noun = 0
+    proper_noun = 0
+    adverb = 0
+    wh_words = 0
+    slang = 0
+
+    # initialize numpy array 
+    feat = np.zero(174)
+    #split the sentence by token
+    word_tag_list = comment.split()
+    for word_tag in word_tag_list:
+        original_word = word_tag.split("/")[0]
+        tag = word_tag.split("/")[1]
+        #1. upper case check
+        if original_word.isupper() and len(original_word) >=3:
+            uppercase += 1
+        word = original_word.lower()
+        
+        #Word feature check 
+        #2-4,7,8,14
+        if word in FIRST_PERSON_PRONOUNS:
+            first_pro += 1
+        elif word in SECOND_PERSON_PRONOUNS:
+            second_pro += 1
+        elif word in THIRD_PERSON_PRONOUNS:
+            third_pro += 1
+        elif word in FUTURE_TENSE:
+            future_tense += 1
+        elif word == ",":
+            commas += 1
+        elif word in SLANG:
+            slang += 1
+        
+        #Tag feature check
+        #5,6,10-13
+        if tag in COORDINATING_CONJUN:
+            coord_conj += 1
+        elif tag in PAST_TENSE:
+            past_tense += 1
+        elif tag in COMMON_NOUNS:
+            common_noun += 1
+        elif tag in PROPER_NOUNS:
+            proper_noun += 1
+        elif tag in ADVERBS:
+            adverb += 1
+        elif tag in WH_WORDS:
+            wh_words += 1
+        
+    
+
+        #9. multi_char punc check
+        if tag == "." and len(word) > 1:
+            multi_pun += 1
+
+    feat[0] = uppercase
+    feat[1] = first_pro
+    feat[2] = second_pro
+    feat[3] = third_pro
+    feat[4] = coord_conj
+    feat[5] = past_tense
+    feat[6] = future_tense
+    feat[7] = commas
+    feat[8] = multi_pun
+    feat[9] = common_noun
+    feat[10] = proper_noun
+    feat[11] = adverb
+    feat[12] = wh_words
+    feat[13] = slang
+
+    #15 Average length of sentence
+    #16 Average length of token
+    #17 Number of sentence
+    sentence_list = comment.split("\n")[:-1]
+    sentence_num = len(sentence_list)
+    total_token_num = 0
+    total_char = 0
+    for sentence in sentence_list:
+        tokenlist = sentence.split()
+        total_token_num += len(tokenlist)
+        for token in tokenlist:
+            word = token.split("/")[0]
+            tag = token.split("/")[1]
+            # if not punctuation. add to total char
+            if tag != ".":
+                total_char += len(word)
+    sentence_avg_len = total_token_num / sentence_num
+    token_avg_len = total_char / total_token_num
+    feat[14] = sentence_avg_len
+    feat[15] = token_avg_len
+    feat[16] = sentence_num
+
+
+    #18 - 29 check with wordlist
+    for word_tag in word_tag_list:
+        o_word = word_tag.split("/")[0]
+        word = o_word.lower()
+        Bris_AOA_data = []
+        AOA_total_value = 0
+        Bris_IMG_data = []
+        IMG_total_value = 0
+        Bris_FAM_data = []
+        FAM_total_value = 0
+        Warr_V_data = []
+        V_total_value = 0
+        Warr_A_data = [] 
+        A_total_value = 0
+        Warr_D_data = []
+        D_total_value = 0  
+        if word in Bristol_dict.keys():
+            Bris_AOA_data.append(Bristol_dict[word]["AOA"])
+            AOA_total_value += Bristol_dict[word]["AOA"]
+            Bris_IMG_data.append(Bristol_dict[word]["IMG"])
+            IMG_total_value += Bristol_dict[word]["IMG"]
+            Bris_FAM_data.append(Bristol_dict[word]["FAM"])
+            FAM_total_value += Bristol_dict[word]["FAM"]
+        feat[17] = AOA_total_value / len(Bris_AOA_data)
+        feat[18] = IMG_total_value / len(Bris_IMG_data)
+        feat[19] = FAM_total_value / len(Bris_FAM_data)
+        feat[20] = np.std(Bris_AOA_data)
+        feat[21] = np.std(Bris_IMG_data)
+        feat[22] = np.std(Bris_FAM_data)
+        if word in Warriner_dict.keys():
+            Warr_V_data.append(Warriner_dict[word]["V.Mean.Sum"])
+            V_total_value += Warriner_dict[word]["V.Mean.Sum"]
+            Warr_A_data.append(Warriner_dict[word]["A.Mean.Sum"])
+            A_total_value += Warriner_dict[word]["A.Mean.Sum"]
+            Warr_D_data.append(Warriner_dict[word]["D.Mean.Sum"])
+            D_total_value += Warriner_dict[word]["D.Mean.Sum"]
+        feat[23] = V_total_value / len(Warr_V_data)
+        feat[24] = A_total_value / len(Warr_A_data)
+        feat[25] = D_total_value / len(Warr_D_data)
+        feat[26] = np.std(Warr_V_data)
+        feat[27] = np.std(Warr_A_data)
+        feat[28] = np.std(Warr_D_data)
+
+    return feat
     
     
 def extract2(feat, comment_class, comment_id):
