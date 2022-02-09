@@ -117,7 +117,7 @@ def main(args):
                     allOutput.append(processed)
                     i+=1
                 k = 0 
-                while(k < left):
+                while(k < left and k< len(data)):
                     j = json.loads(data[k])
                     processed = {"id":j["id"], "body":preproc1(j["body"]),"cat": file}
                     allOutput.append(processed)
