@@ -39,7 +39,7 @@ ADVERBS = ["RB", "RBR", "RBS"]
 
 WH_WORDS = ["WDT", "WP", "WP$", "WRB"]
 
-PAST_TENSE = ["VBD", "VBN"]
+PAST_TENSE = ["VBD"]
 
 COORDINATING_CONJUN = ["CC"]
 
@@ -48,20 +48,23 @@ COORDINATING_CONJUN = ["CC"]
 Bristol = open("/u/cs401/Wordlists/BristolNorms+GilhoolyLogie.csv")
 Warriner = open("/u/cs401/Wordlists/Ratings_Warriner_et_al.csv")
 
+
 reader1 = csv.reader(Bristol)
 Bristol_dict = {}
 for row in reader1:
-    Bristol_dict[row[1]] = {"AoA": row[3], "IMG": row[4], "FAM":row[5]}
+    if row[1] != "WORD" and (row[1] != ""):
+        Bristol_dict[row[1]] = {"AoA": float(row[3]), "IMG": float(row[4]), "FAM":float(row[5])}
 reader2 = csv.reader(Warriner)
 Warriner_dict = {}
 for row in reader2:
-    Warriner_dict[row[1]] = {"V.Mean.Sum": row[2], "A.Mean.Sum": row[5], "D.Mean.Sum": row[8]}
+    if row[1] != "Word":
+        Warriner_dict[row[1]] = {"V.Mean.Sum": float(row[2]), "A.Mean.Sum": float(row[5]), "D.Mean.Sum": float(row[8])}
 
-def all_punctuation(string):
+def all_punctuation(str):
     '''
     check if the token are punctuation entirely 
     '''
-    for c in string:
+    for c in str:
         if c not in string.punctuation:
             return False
     return True
@@ -166,6 +169,7 @@ def extract1(comment):
     sentence_num = len(sentence_list)
     total_token_num = 0
     total_char = 0
+    total_word_token = 0 
     for sentence in sentence_list:
         tokenlist = sentence.split()
         total_token_num += len(tokenlist)
@@ -174,56 +178,72 @@ def extract1(comment):
             tag = token.split("/")[1]
             # if not punctuation. add to total char
             if not all_punctuation(word):
+                total_word_token += 1
                 total_char += len(word)
     sentence_avg_len = total_token_num / sentence_num
-    token_avg_len = total_char / total_token_num
+    token_avg_len = total_char / total_word_token
     feat[14] = sentence_avg_len
     feat[15] = token_avg_len
     feat[16] = sentence_num
 
 
     #18 - 29 check with wordlist
+    Bris_AOA_data = []
+    Bris_IMG_data = []
+    Bris_FAM_data = []
+    Warr_V_data = []
+    Warr_A_data = [] 
+    Warr_D_data = []  
     for word_tag in word_tag_list:
         o_word = word_tag.split("/")[0]
-        word = o_word.lower()
-        Bris_AOA_data = []
-        AOA_total_value = 0
-        Bris_IMG_data = []
-        IMG_total_value = 0
-        Bris_FAM_data = []
-        FAM_total_value = 0
-        Warr_V_data = []
-        V_total_value = 0
-        Warr_A_data = [] 
-        A_total_value = 0
-        Warr_D_data = []
-        D_total_value = 0  
+        word = o_word.lower()        
         if word in Bristol_dict.keys():
-            Bris_AOA_data.append(Bristol_dict[word]["AOA"])
-            AOA_total_value += Bristol_dict[word]["AOA"]
+            Bris_AOA_data.append(Bristol_dict[word]["AoA"])
             Bris_IMG_data.append(Bristol_dict[word]["IMG"])
-            IMG_total_value += Bristol_dict[word]["IMG"]
             Bris_FAM_data.append(Bristol_dict[word]["FAM"])
-            FAM_total_value += Bristol_dict[word]["FAM"]
-        feat[17] = AOA_total_value / len(Bris_AOA_data)
-        feat[18] = IMG_total_value / len(Bris_IMG_data)
-        feat[19] = FAM_total_value / len(Bris_FAM_data)
-        feat[20] = np.std(Bris_AOA_data)
-        feat[21] = np.std(Bris_IMG_data)
-        feat[22] = np.std(Bris_FAM_data)
         if word in Warriner_dict.keys():
             Warr_V_data.append(Warriner_dict[word]["V.Mean.Sum"])
-            V_total_value += Warriner_dict[word]["V.Mean.Sum"]
             Warr_A_data.append(Warriner_dict[word]["A.Mean.Sum"])
-            A_total_value += Warriner_dict[word]["A.Mean.Sum"]
             Warr_D_data.append(Warriner_dict[word]["D.Mean.Sum"])
-            D_total_value += Warriner_dict[word]["D.Mean.Sum"]
-        feat[23] = V_total_value / len(Warr_V_data)
-        feat[24] = A_total_value / len(Warr_A_data)
-        feat[25] = D_total_value / len(Warr_D_data)
+    if len(Bris_AOA_data) != 0:
+        feat[17] = np.mean(Bris_AOA_data)
+        feat[20] = np.std(Bris_AOA_data)
+    else:
+        feat[17] = 0
+        feat[20] = 0
+    if len(Bris_IMG_data) != 0:
+        feat[18] = np.mean(Bris_IMG_data)
+        feat[21] = np.std(Bris_IMG_data)
+    else:
+        feat[18] = 0
+        feat[21] = 0   
+    if len(Bris_FAM_data) != 0:    
+        feat[19] = np.mean(Bris_FAM_data)
+        feat[22] = np.std(Bris_FAM_data)
+    else:
+        feat[19] = 0
+        feat[22] = 0
+    if len(Warr_V_data) != 0:
+        # print(Warr_V_data)
+        feat[23] = np.mean(Warr_V_data)
         feat[26] = np.std(Warr_V_data)
+    else:
+        feat[23] = 0
+        feat[26] = 0
+    if len(Warr_A_data) != 0:
+        # print(Warr_A_data)
+        feat[24] = np.mean(Warr_A_data)
         feat[27] = np.std(Warr_A_data)
+    else:
+        feat[24] = 0
+        feat[27] = 0
+    if len(Warr_D_data) != 0:
+        # print(Warr_D_data)
+        feat[25] = np.mean(Warr_D_data)
         feat[28] = np.std(Warr_D_data)
+    else:
+        feat[25] = 0
+        feat[28] = 0
 
     return feat
     
@@ -238,7 +258,7 @@ def FiletoDict(file):
     f = open(file,'r')
     lines = f.readlines()
     for line in lines:
-        dict[line] = index
+        dict[line.rstrip()] = index
         index += 1
     return dict
 
@@ -249,10 +269,12 @@ Center_dict = FiletoDict("/u/cs401/A1/feats/Center_IDs.txt")
 Left_dict = FiletoDict("/u/cs401/A1/feats/Left_IDs.txt")
 Right_dict = FiletoDict("/u/cs401/A1/feats/Right_IDs.txt")
 
+# load npy file
 Alt_np = np.load("/u/cs401/A1/feats/Alt_feats.dat.npy")
 Center_np = np.load("/u/cs401/A1/feats/Center_feats.dat.npy")
 Left_np = np.load("/u/cs401/A1/feats/Left_feats.dat.npy")
 Right_np = np.load("/u/cs401/A1/feats/Right_feats.dat.npy")
+
 
 def extract2(feat, comment_class, comment_id):
     ''' This function adds features 30-173 for a single comment.
@@ -292,18 +314,19 @@ def main(args):
 
     for i in range(len(data)):
         #the i th comment
-        j = json.loads(data[i])
+        j = data[i]
         feat = extract1(j["body"])
         full_feat = extract2(feat, j["cat"], j["id"])
         if j["cat"] == "Left":
-            full_feat[173] = 0
+            final_feat = np.append(full_feat,0)
         elif j["cat"] == "Center":
-            full_feat[173] = 1 
+            final_feat = np.append(full_feat,1)
         elif j["cat"] == "Right":
-            full_feat[173] = 2 
+            final_feat = np.append(full_feat,2)
         elif j["cat"] == "Alt":
-            full_feat[173] = 3 
-        feats[i] = full_feat 
+            final_feat = np.append(full_feat,3) 
+        # print(final_feat)
+        feats[i] = final_feat 
     # TODO: Call extract1 for each datatpoint to find the first 29 features. 
     # Add these to feats.
     # TODO: Call extract2 for each feature vector to copy LIWC features (features 30-173)
