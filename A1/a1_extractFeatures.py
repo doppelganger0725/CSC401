@@ -56,6 +56,18 @@ reader2 = csv.reader(Warriner)
 Warriner_dict = {}
 for row in reader2:
     Warriner_dict[row[1]] = {"V.Mean.Sum": row[2], "A.Mean.Sum": row[5], "D.Mean.Sum": row[8]}
+
+def all_punctuation(string):
+    '''
+    check if the token are punctuation entirely 
+    '''
+    for c in string:
+        if c not in string.punctuation:
+            return False
+    return True
+
+
+
 def extract1(comment):
     ''' This function extracts features from a single comment
 
@@ -85,7 +97,7 @@ def extract1(comment):
     slang = 0
 
     # initialize numpy array 
-    feat = np.zero(174)
+    feat = np.zeros(173)
     #split the sentence by token
     word_tag_list = comment.split()
     for word_tag in word_tag_list:
@@ -129,7 +141,7 @@ def extract1(comment):
     
 
         #9. multi_char punc check
-        if tag == "." and len(word) > 1:
+        if all_punctuation(word) and len(word) > 1:
             multi_pun += 1
 
     feat[0] = uppercase
@@ -161,7 +173,7 @@ def extract1(comment):
             word = token.split("/")[0]
             tag = token.split("/")[1]
             # if not punctuation. add to total char
-            if tag != ".":
+            if not all_punctuation(word):
                 total_char += len(word)
     sentence_avg_len = total_token_num / sentence_num
     token_avg_len = total_char / total_token_num
@@ -215,7 +227,33 @@ def extract1(comment):
 
     return feat
     
-    
+
+#Read txt file to an id: index dict
+def FiletoDict(file):
+    '''
+    transfer ID_txt to id: index dict 
+    '''
+    index = 0
+    dict = {}
+    f = open(file,'r')
+    lines = f.readlines()
+    for line in lines:
+        dict[line] = index
+        index += 1
+    return dict
+
+# Read txt file
+
+Alt_dict = FiletoDict("/u/cs401/A1/feats/Alt_IDs.txt")
+Center_dict = FiletoDict("/u/cs401/A1/feats/Center_IDs.txt")
+Left_dict = FiletoDict("/u/cs401/A1/feats/Left_IDs.txt")
+Right_dict = FiletoDict("/u/cs401/A1/feats/Right_IDs.txt")
+
+Alt_np = np.load("/u/cs401/A1/feats/Alt_feats.dat.npy")
+Center_np = np.load("/u/cs401/A1/feats/Center_feats.dat.npy")
+Left_np = np.load("/u/cs401/A1/feats/Left_feats.dat.npy")
+Right_np = np.load("/u/cs401/A1/feats/Right_feats.dat.npy")
+
 def extract2(feat, comment_class, comment_id):
     ''' This function adds features 30-173 for a single comment.
 
@@ -228,8 +266,21 @@ def extract2(feat, comment_class, comment_id):
         feat : numpy Array, a 173-length vector of floating point features (this 
         function adds feature 30-173). This should be a modified version of 
         the parameter feats.
-    '''    
-    print('TODO')
+    '''
+    index = 0
+    if comment_class == "Alt":
+        index = Alt_dict[comment_id]
+        feat[29:173] = Alt_np[index]
+    elif comment_class == "Center":
+        index = Center_dict[comment_id]
+        feat[29:173] = Center_np[index]
+    elif comment_class == "Left":
+        index = Left_dict[comment_id]
+        feat[29:173] = Left_np[index]
+    elif comment_class == "Right":
+        index = Right_dict[comment_id]
+        feat[29:173] = Right_np[index]
+    return feat
 
 
 def main(args):
@@ -239,12 +290,26 @@ def main(args):
     data = json.load(open(args.input))
     feats = np.zeros((len(data), 173+1))
 
+    for i in range(len(data)):
+        #the i th comment
+        j = json.loads(data[i])
+        feat = extract1(j["body"])
+        full_feat = extract2(feat, j["cat"], j["id"])
+        if j["cat"] == "Left":
+            full_feat[173] = 0
+        elif j["cat"] == "Center":
+            full_feat[173] = 1 
+        elif j["cat"] == "Right":
+            full_feat[173] = 2 
+        elif j["cat"] == "Alt":
+            full_feat[173] = 3 
+        feats[i] = full_feat 
     # TODO: Call extract1 for each datatpoint to find the first 29 features. 
     # Add these to feats.
     # TODO: Call extract2 for each feature vector to copy LIWC features (features 30-173)
     # into feats. (Note that these rely on each data point's class,
     # which is why we can't add them in extract1).
-    print('TODO')
+    # print('TODO')
 
     np.savez_compressed(args.output, feats)
 
