@@ -180,8 +180,14 @@ def extract1(comment):
             if not all_punctuation(word):
                 total_word_token += 1
                 total_char += len(word)
-    sentence_avg_len = total_token_num / sentence_num
-    token_avg_len = total_char / total_word_token
+    if sentence_num != 0:
+        sentence_avg_len = total_token_num / sentence_num
+    else:
+        sentence_avg_len = 0
+    if total_word_token != 0:
+        token_avg_len = total_char / total_word_token
+    else:
+        token_avg_len = 0
     feat[14] = sentence_avg_len
     feat[15] = token_avg_len
     feat[16] = sentence_num
