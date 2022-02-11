@@ -10,6 +10,7 @@
 
 import argparse
 import os
+from random import shuffle
 from re import X
 from scipy.stats import ttest_rel
 from sklearn.ensemble import AdaBoostClassifier
@@ -21,6 +22,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import SGDClassifier  
+from sklearn.model_selection import KFold
 
 # set the random state for reproducibility 
 import numpy as np
@@ -66,7 +68,6 @@ def class31(output_dir, X_train, X_test, y_train, y_test):
     Returns:      
        i: int, the index of the supposed best classifier
     '''
-    # print('TODO Section 3.1')
     iBest = None
     acc_max = 0
     classifier = None
@@ -105,6 +106,20 @@ def class31(output_dir, X_train, X_test, y_train, y_test):
 
     return iBest
 
+def classify(iBest):
+    classifier = None
+    if iBest == 0:
+        classifier = SGDClassifier()
+    if iBest == 1:
+        classifier = GaussianNB()
+    if iBest == 2:
+        classifier = RandomForestClassifier(n_estimators =10, max_depth=5)
+    if iBest == 3:
+        classifier = MLPClassifier(alpha = 0.05)
+    if iBest == 4:
+        classifier = AdaBoostClassifier()
+    return classifier
+
 
 def class32(output_dir, X_train, X_test, y_train, y_test, iBest):
     ''' This function performs experiment 3.2
@@ -122,19 +137,7 @@ def class32(output_dir, X_train, X_test, y_train, y_test, iBest):
        y_1k: numPy array, just 1K rows of y_train
    '''
     indexes = [1000, 5000, 10000, 15000, 20000]
-    classifier = None
-    if iBest == 0:
-        classifier = SGDClassifier()
-    if iBest == 1:
-        classifier = GaussianNB()
-    if iBest == 2:
-        classifier = RandomForestClassifier(n_estimators =10, max_depth=5)
-    if iBest == 3:
-        classifier = MLPClassifier(alpha = 0.05)
-    if iBest == 4:
-        classifier = AdaBoostClassifier()
-    
-    
+    classifier = classify(iBest)
     
     with open(f"{output_dir}/a1_3.2.txt", "w") as outf:
         # For each number of training examples, compute results and write
@@ -157,74 +160,64 @@ def class32(output_dir, X_train, X_test, y_train, y_test, iBest):
 
 
 # Read feature.txt map the index with feature name
-feat_dict={}
-feat_dict[0] = "Number of tokens in uppercase (≥ 3 letters long)"
-feat_dict[1] = "Number of first-person pronouns"
-feat_dict[2] = "Number of second-person pronouns"
-feat_dict[3] = "Number of third-person pronouns"
-feat_dict[4] = "Number of coordinating conjunctions"
-feat_dict[5] = "Number of past-tense verbs"
-feat_dict[6] = "Number of future-tense verbs"
-feat_dict[7] = "Number of commas"
-feat_dict[8] = "Number of multi-character punctuation tokens"
-feat_dict[9] = "Number of common nouns"
-feat_dict[10] = "Number of proper nouns"
-feat_dict[11] = "Number of adverbs"
-feat_dict[12] = "Number of wh- words"
-feat_dict[13] = "Number of slang acronyms"
-feat_dict[14] = "Average length of sentences, in tokens"
-feat_dict[15] = "Average length of tokens, excluding punctuation-only tokens, in characters"
-feat_dict[16] = "Number of sentences"
-feat_dict[17] = "Average of AoA (100-700) from Bristol, Gilhooly, and Logie norms"
-feat_dict[18] = "Average of IMG from Bristol, Gilhooly, and Logie norms"
-feat_dict[19] = "Average of FAM from Bristol, Gilhooly, and Logie norms"
-feat_dict[20] = "Standard deviation of AoA (100-700) from Bristol, Gilhooly, and Logie norms"
-feat_dict[21] = "Standard deviation of IMG from Bristol, Gilhooly, and Logie norms"
-feat_dict[22] = "Standard deviation of FAM from Bristol, Gilhooly, and Logie norms"
-feat_dict[23] = "Average of V.Mean.Sum from Warringer norms"
-feat_dict[24] = "Average of A.Mean.Sum from Warringer norms"
-feat_dict[25] = "Average of D.Mean.Sum from Warringer norms"
-feat_dict[26] = "Standard deviation of V.Mean.Sum from Warringer norms"
-feat_dict[27] = "Standard deviation of A.Mean.Sum from Warringer norms"
-feat_dict[28] = "Standard deviation of D.Mean.Sum from Warringer norms"
+# feat_dict={}
+# feat_dict[0] = "Number of tokens in uppercase (≥ 3 letters long)"
+# feat_dict[1] = "Number of first-person pronouns"
+# feat_dict[2] = "Number of second-person pronouns"
+# feat_dict[3] = "Number of third-person pronouns"
+# feat_dict[4] = "Number of coordinating conjunctions"
+# feat_dict[5] = "Number of past-tense verbs"
+# feat_dict[6] = "Number of future-tense verbs"
+# feat_dict[7] = "Number of commas"
+# feat_dict[8] = "Number of multi-character punctuation tokens"
+# feat_dict[9] = "Number of common nouns"
+# feat_dict[10] = "Number of proper nouns"
+# feat_dict[11] = "Number of adverbs"
+# feat_dict[12] = "Number of wh- words"
+# feat_dict[13] = "Number of slang acronyms"
+# feat_dict[14] = "Average length of sentences, in tokens"
+# feat_dict[15] = "Average length of tokens, excluding punctuation-only tokens, in characters"
+# feat_dict[16] = "Number of sentences"
+# feat_dict[17] = "Average of AoA (100-700) from Bristol, Gilhooly, and Logie norms"
+# feat_dict[18] = "Average of IMG from Bristol, Gilhooly, and Logie norms"
+# feat_dict[19] = "Average of FAM from Bristol, Gilhooly, and Logie norms"
+# feat_dict[20] = "Standard deviation of AoA (100-700) from Bristol, Gilhooly, and Logie norms"
+# feat_dict[21] = "Standard deviation of IMG from Bristol, Gilhooly, and Logie norms"
+# feat_dict[22] = "Standard deviation of FAM from Bristol, Gilhooly, and Logie norms"
+# feat_dict[23] = "Average of V.Mean.Sum from Warringer norms"
+# feat_dict[24] = "Average of A.Mean.Sum from Warringer norms"
+# feat_dict[25] = "Average of D.Mean.Sum from Warringer norms"
+# feat_dict[26] = "Standard deviation of V.Mean.Sum from Warringer norms"
+# feat_dict[27] = "Standard deviation of A.Mean.Sum from Warringer norms"
+# feat_dict[28] = "Standard deviation of D.Mean.Sum from Warringer norms"
 
 
-def add_dict(feature, file):
-    '''
-    compose feat name dict
-    '''
-    index = 29
-    f = open(file,'r')
-    lines = f.readlines()
-    for line in lines:
-        feature[index] = line.rstrip()
-        index += 1
-    return feature
+# def add_dict(feature, file):
+#     '''
+#     compose feat name dict
+#     '''
+#     index = 29
+#     f = open(file,'r')
+#     lines = f.readlines()
+#     for line in lines:
+#         feature[index] = line.rstrip()
+#         index += 1
+#     return feature
 
-# full_feat = add_dict(feat_dict,"/u/cs401/A1/feats/feats.txt")
-full_feat = add_dict(feat_dict,"/Users/Ryan Fu/Desktop/fushihh1/A1/a1_feats/feats/feats.txt")
+# # full_feat = add_dict(feat_dict,"/u/cs401/A1/feats/feats.txt")
+# full_feat = add_dict(feat_dict,"/Users/Ryan Fu/Desktop/fushihh1/A1/a1_feats/feats/feats.txt")
 
 
 
 def five_feature(X_train, X_test, y_train, y_test, iBest):
-    classifier = None
-    if iBest == 0:
-        classifier = SGDClassifier()
-    if iBest == 1:
-        classifier = GaussianNB()
-    if iBest == 2:
-        classifier = RandomForestClassifier(n_estimators =10, max_depth=5)
-    if iBest == 3:
-        classifier = MLPClassifier(alpha = 0.05)
-    if iBest == 4:
-        classifier = AdaBoostClassifier()
+    classifier = classify(iBest)
     
     selector = SelectKBest(f_classif, k=5)
     X_new = selector.fit_transform(X_train, y_train)
     X_new_test = selector.transform(X_test)
     temp = selector.pvalues_
-    print("\n\n\pvalues\n\n")
-    print(temp)
+    # print("\n\n\pvalues\n\n")
+    # print(temp)
     index = np.argsort(temp)[:5]
     classifier.fit(X_new,y_train) 
     y_prediction = classifier.predict(X_new_test)
@@ -298,14 +291,60 @@ def class34(output_dir, X_train, X_test, y_train, y_test, i):
        y_test: NumPy array, with the selected testing classes
        i: int, the index of the supposed best classifier (from task 3.1)  
         '''
-    print('TODO Section 3.4')
+    
+    X = np.concatenate((X_train,X_test))
+    y = np.concatenate((y_train,y_test))
     
     with open(f"{output_dir}/a1_3.4.txt", "w") as outf:
         # Prepare kfold_accuracies, then uncomment this, so it writes them to outf.
         # for each fold:
-        #     outf.write(f'Kfold Accuracies: {[round(acc, 4) for acc in kfold_accuracies]}\n')
-        # outf.write(f'p-values: {[format(pval) for pval in p_values]}\n')
-        pass
+        kf = KFold(n_splits =5, shuffle = True)
+        kf_matrix_lst = []
+        for train_index, test_index in kf.split(X):
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+            
+            kfold_accuracies = []
+            classifier =None
+            #for each classifier
+            for k in range(5):
+                # classifier_name = classify_name_list[i]
+                if k == 0:
+                    classifier = SGDClassifier()
+                if k == 1:
+                    classifier = GaussianNB()
+                if k == 2:
+                    classifier = RandomForestClassifier(n_estimators =10, max_depth=5)
+                if k == 3:
+                    classifier = MLPClassifier(alpha = 0.05)
+                if k == 4:
+                    classifier = AdaBoostClassifier()
+                classifier.fit(X_train,y_train) 
+                y_prediction = classifier.predict(X_test)
+                conf_matrix = confusion_matrix(y_test, y_prediction)
+                acc = accuracy(conf_matrix)
+                kfold_accuracies.append(acc)
+            kf_matrix_lst.append(kfold_accuracies)
+            outf.write(f'Kfold Accuracies: {[round(acc, 4) for acc in kfold_accuracies]}\n')
+        # print("kf-matix_list\n")
+        # print(kf_matrix_lst)
+        kf_matrix = np.array(kf_matrix_lst)
+        # print(kf_matrix)
+        candidate_list = []
+        kt_trans = kf_matrix.transpose()
+        # print("kt-trans\n")
+        # print(kt_trans)
+        for j in range(5):
+            if j != i:
+                candidate_list.append(kt_trans[j])
+        best = kt_trans[i]
+        p_values = []
+        for can in candidate_list:
+            S = ttest_rel(can, best)
+            p_values.append(S.pvalue) 
+ 
+        outf.write(f'p-values: {[format(pval) for pval in p_values]}\n')
+
 
 
     
@@ -329,12 +368,8 @@ if __name__ == "__main__":
         y.append(lst[i][173])
     # TODO: load data and split into train and test.
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    # iBest = class31(output, X_train, X_test, y_train, y_test)
-    iBest = 4
-    # X_1k, y_1k = class32(output, X_train, X_test, y_train, y_test,iBest)
-    X_1k = X_train[:1000]
-    y_1k = y_train[:1000]
-    print(len(feat_dict))
+    iBest = class31(output, X_train, X_test, y_train, y_test)
+    X_1k, y_1k = class32(output, X_train, X_test, y_train, y_test,iBest)
     class33(output, X_train, X_test, y_train, y_test, iBest, X_1k, y_1k)
     class34(output, X_train, X_test, y_train, y_test, iBest)
     # TODO : complete each classification experiment, in sequence.
