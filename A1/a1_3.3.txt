@@ -1,0 +1,19 @@
+5 p-values: ['1.34124600409483e-310', '1.877687017415616e-276', '2.4551273523273553e-267', '6.715552286560345e-222', '8.55635423811708e-200']
+50 p-values: ['1.34124600409483e-310', '1.877687017415616e-276', '2.4551273523273553e-267', '6.715552286560345e-222', '8.55635423811708e-200', '7.337726410863085e-199', '1.7698891944129303e-164', '8.058594297794235e-160', '7.229862137313217e-154', '8.379521660866237e-154', '1.7685464367970737e-146', '1.9196211337907797e-144', '2.3843439547163676e-127', '8.247202123503585e-120', '1.950677518110169e-106', '3.837757056597569e-100', '1.269837260757309e-93', '7.985403972945292e-89', '8.040375264439725e-89', '1.130127094472815e-82', '4.853495209850834e-80', '8.934538601967582e-80', '1.4405386181201608e-76', '8.445798254656584e-75', '1.019730447535131e-72', '5.881409843191138e-72', '7.741887410217882e-69', '8.467350226332656e-69', '1.4327570181586274e-67', '8.444678379306679e-66', '4.573461315099053e-58', '4.192696123211814e-55', '2.861260660959273e-54', '7.766650007768554e-54', '1.4746088570614823e-50', '1.7696876065569163e-50', '2.6066038924872922e-50', '1.362167768472074e-48', '1.6012533197993124e-47', '9.270737033365031e-47', '1.4156273564568088e-46', '5.385398372469211e-45', '2.37429789995465e-44', '4.657281126012698e-43', '7.749282855678606e-43', '7.569886315963035e-42', '2.5282149428716135e-40', '1.456710461236409e-39', '1.8888477983823488e-39', '2.215024712532811e-39']
+Accuracy for 1k: 0.3151
+Accuracy for full dataset: 0.3787
+Chosen feature intersection: [143, 11]
+Top-5 at higher: [143   2 149  11  83]
+
+Answer question:
+(a) The common features are number of Adverbs and receptiviti_health_oriented. 
+The adverb often describe some relation of manner or quality. Could be more effectively express one's political opinion.  
+(b) The p-value are generally lower with more data.
+With more training data provided, we are able to identify the category with more accuracy, a general lower value shows we could better sepeated class in general 
+(c) The top five features are:
+1)receptiviti_health_oriented           possible hypothesis: The health related topic could be a key argument for different political perspective
+2)Number of second-person pronouns      possible hypothesis: The second person point view oftused for goving direction and advice. Also allows writter to express one's opinion
+3)receptiviti_intellectual              possible hypothesis: intellectual relates to one's ability to think in a logical way
+4)Number of adverbs                     possible hypothesis: The adverb often describe some relation of manner or quality. Could be more effectively express one's political opinion.
+5)liwc_motion                           possible hypothesis: motion mostly relates to verb and some verb could express the degree and attitude implicitly
+
