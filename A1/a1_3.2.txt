@@ -1,0 +1,9 @@
+1000: 0.3604
+5000: 0.4160
+10000: 0.4211
+15000: 0.4301
+20000: 0.4455
+
+As we increase the training data, the overall prediction accuracy increases.
+With the increased amount of data, each category's specific feature/trait could be further distinguished.
+A more general accurate predict pattern could be learned from those increased amounts of data.
