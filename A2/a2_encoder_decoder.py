@@ -224,13 +224,7 @@ class DecoderWithoutAttention(DecoderBase):
         #   htilde_t (output) is of same shape as htilde_tm1
         # assert False, "Fill me" 
         if self.cell_type == "lstm":
-            # if lstm  htilde output a tuple change to size (M, hidden_state_size)
-            # reshape_htilde_tm1 = (htilde_tm1[0][:,0:self.hidden_state_size],htilde_tm1[1][:,0:self.hidden_state_size])
             htilde_tm1 = (htilde_tm1[0],htilde_tm1[1])
-        else:
-            # if not lstm change htilde_tm1 to size (M, hidden_state_size)
-            # reshape_htilde_tm1 = htilde_tm1[:,0:self.hidden_state_size]
-            htilde_tm1 = htilde_tm1
         htilde_t = self.cell(xtilde_t,htilde_tm1)
         return htilde_t
 
@@ -428,7 +422,7 @@ class DecoderWithMultiHeadAttention(DecoderWithAttention):
         # 4. You *WILL* need self.heads at this point
         # assert False, "Fill me"
         # shape(S, M, 2 * H)
-        #///////////////////////////need check
+        
         shape = h.size()
         S = shape[0]
         M = shape[1]
@@ -463,8 +457,9 @@ class EncoderDecoder(EncoderDecoderBase):
         # 4. Recall that self.target_eos doubles as the decoder pad id since we
         #   never need an embedding for it
         # assert False, "Fill me"
-        self.encoder = encoder_class()
-        self.decoder = decoder_class()
+        self.encoder = encoder_class(self.source_vocab_size,self.source_pad_id, self.word_embedding_size,self.encoder_num_hidden_layers,self.encoder_hidden_size,self.encoder_dropout,self.cell_type)
+        #bidirection hidden size *2 
+        self.decoder = decoder_class(self.target_vocab_size,self.target_eos,self.word_embedding_size,self.encoder_hidden_size * 2,self.cell_type,self.heads)
 
     def get_logits_for_teacher_forcing(
             self,
@@ -481,7 +476,18 @@ class EncoderDecoder(EncoderDecoderBase):
         # 1. Relevant pytorch modules: torch.{zero_like, stack}
         # 2. Recall an LSTM's cell state is always initialized to zero.
         # 3. Note logits sequence dimension is one shorter than E (why?)
-        assert False, "Fill me"
+        # assert False, "Fill me"
+        logits_list = []
+        htilde_tm1 = None
+        # dimension t - 1
+        Time = E.size()[0] - 1
+        # for each time stamp in E 
+        for t in range(Time):
+            logits_t,htilde_tm1 = self.decoder.forward(E[t],htilde_tm1,h,F_lens)
+            
+            logits_list.append(logits_t)
+        logits = torch.stack(logits_list)
+        return logits
 
     def update_beam(
             self,
@@ -509,4 +515,47 @@ class EncoderDecoder(EncoderDecoderBase):
         #   torch.{flatten, topk, unsqueeze, expand_as, gather, cat}
         # 2. If you flatten a two-dimensional array of shape z of (A, B),
         #   then the element z[a, b] maps to z'[a*B + b]
-        assert False, "Fill me"
+        # assert False, "Fill me"
+        
+        
+        M = logpy_t.size()[0]
+        K = logpy_t.size()[1]
+        V = logpy_t.size()[2]
+        # reshape logpb_tm1 to M, K, V
+        extend_logpb_tm1 = logpb_tm1.unsqueeze(-1) 
+        # get full path to find top k in logpb_tm1 + logpy_t 
+        path = extend_logpb_tm1 + logpy_t
+        # flatten the full paths (M,K*V)
+        full_path = torch.flatten(path,start_dim=1)
+        # find the topk in the flatten full path
+        # top_tensor and top_tensor_index with dim(M,K)
+        top_value, top_tensor_index = torch.topk(full_path, k=K, dim=1)
+        #update probability value
+        logpb_t = top_value
+        # find path k to keep
+        k_path = top_tensor_index // V
+        # find the best word to keep
+        k_vocab = top_tensor_index % V
+        # reshape k_path to b_tm1_1 (T,M,K)
+        reshape_k_path = k_path.unsqueeze(0).expand_as(b_tm1_1)
+        # reshape k_vocab to b_tm1_1 (T,M,K)
+        reshape_k_vocab = k_vocab.unsqueeze(0)
+        # gather index of those k_path in b_tm1_1 
+        gather_path = b_tm1_1.gather(2,reshape_k_path)
+        # Cat vocab on each time dimension
+        b_t_1 = torch.cat([gather_path,reshape_k_vocab],dim=0)
+        
+        # udpate b_t_0
+        # LSTM case
+        if self.cell_type == "lstm":
+            hidden = htilde_t[0]
+            cell = htilde_t[1]
+            hidden_index = k_path.unsqueeze(2).expand_as(hidden)
+            cell_index = k_path.unsqueeze(2).expand_as(cell)
+            b_t_0 = (hidden.gather(1,hidden_index),cell.gather(1,cell_index)) 
+        else:
+            # add dimension 2H to k_path and make it same as htilde
+            index_tensor = k_path.unsqueeze(2).expand_as(htilde_t)
+            b_t_0 = htilde_t.gather(1,index_tensor)
+        
+        return [b_t_0, b_t_1,logpb_t]
