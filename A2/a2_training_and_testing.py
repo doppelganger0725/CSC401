@@ -108,7 +108,7 @@ def train_for_epoch(
         # T-1
         E = E[1:]
         # (T-1 *M,-1)
-        E = torch.flatten(E).unsqueeze(-1)
+        E = torch.flatten(E)
         # step6
         loss = loss_fn(flat_logits, E)
         # step7
