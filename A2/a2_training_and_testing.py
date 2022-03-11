@@ -105,7 +105,6 @@ def train_for_epoch(
         #   logits is of shape (T - 1, M, Vo)
         # flatten logit to (T-1 *M, V)
         flat_logits = torch.flatten(logits, start_dim=0, end_dim=1)
-        E = torch.flatten(E)
         # T-1
         E = E[1:,:]
         # (T-1 *M,-1)
