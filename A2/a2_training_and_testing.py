@@ -100,7 +100,7 @@ def train_for_epoch(
         logits = model(F, F_lens, E)
         # step4
         mask = model.get_target_padding_mask(E)
-        E= torch.masked_fill(mask,-1)
+        E= torch.masked_fill(E,mask,-1)
         # step5
         #   logits is of shape (T - 1, M, Vo)
         # flatten logit to (T-1 *M, V)

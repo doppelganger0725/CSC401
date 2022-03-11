@@ -187,7 +187,7 @@ class DecoderWithoutAttention(DecoderBase):
         #   t=0
         # 2. Relevant pytorch function: torch.cat
         # assert False, "Fill me"
-        forward = h[(F_lens-1), :, 0:self.hidden_state_size // 2]
+        forward = h[(F_lens-1), torch.arange(F_lens.size()[0]), 0:self.hidden_state_size // 2]
         backward = h[0,:,self.hidden_state_size//2:self.hidden_state_size]
         htilde_0 = torch.cat([forward, backward], dim=1)
         return htilde_0 
