@@ -533,7 +533,7 @@ class EncoderDecoder(EncoderDecoderBase):
         #update probability value
         logpb_t = top_value
         # find path k to keep
-        k_path = top_tensor_index // V
+        k_path = torch.div(top_tensor_index, V,rounding_mode='floor')
         # find the best word to keep
         k_vocab = top_tensor_index % V
         # reshape k_path to b_tm1_1 (T,M,K)
