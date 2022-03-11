@@ -79,7 +79,7 @@ def n_gram_precision(reference:Sequence[str], candidate:Sequence[str], n:int) ->
         if item in ref_group:
             match += 1
     
-    if len(candidate) == 0:
+    if len(candidate) == 0 or n > len(candidate):
         return 0
     else:
         return match / len(can_group)

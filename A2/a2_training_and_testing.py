@@ -88,7 +88,7 @@ def train_for_epoch(
     # assert False, "Fill me"
     total_loss = 0
     number_sequence = 0
-    loss_fn = torch.nn.CrossEntropyLoss(ignore_index = model.source_pad_id)
+    loss_fn = torch.nn.CrossEntropyLoss(ignore_index = -1)
     for F, F_lens, E in tqdm(dataloader):
         # step1
         F = F.to(device)
@@ -106,7 +106,7 @@ def train_for_epoch(
         # flatten logit to (T-1 *M, V)
         flat_logits = torch.flatten(logits, start_dim=0, end_dim=1)
         # T-1
-        E = E[1:,:]
+        E = E[1:]
         # (T-1 *M,-1)
         E = torch.flatten(E).unsqueeze(-1)
         # step6
