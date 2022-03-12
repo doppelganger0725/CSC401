@@ -281,7 +281,7 @@ class DecoderWithAttention(DecoderWithoutAttention):
         shape = h.size()
         # scale (M, 2 * H)
         scale = shape[1:]
-        zero_tensor = torch.zero(scale)
+        zero_tensor = torch.zeros(scale)
         return zero_tensor
 
     def get_current_rnn_input(
@@ -374,7 +374,10 @@ class DecoderWithAttention(DecoderWithoutAttention):
         # Hint:
         # Relevant pytorch function: torch.nn.functional.cosine_similarity
         # assert False, "Fill me"
-        e_t = torch.nn.functional.cosine_similarity(htilde_t,h)
+        if self.cell_type == "lstm":
+            e_t = torch.nn.functional.cosine_similarity(htilde_t[0],h)
+        else:
+            e_t = torch.nn.functional.cosine_similarity(htilde_t,h)
         return e_t
 
 class DecoderWithMultiHeadAttention(DecoderWithAttention):
