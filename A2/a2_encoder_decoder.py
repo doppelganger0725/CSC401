@@ -95,7 +95,7 @@ class Encoder(EncoderBase):
         #   relevant pytorch modules:
         #   torch.nn.utils.rnn.{pad_packed,pack_padded}_sequence
         # assert False, "Fill me"
-        packed_embeds = torch.nn.utils.rnn.pack_padded_sequence(input=x,lengths=F_lens,enforce_sorted=False)
+        packed_embeds = torch.nn.utils.rnn.pack_padded_sequence(input=x,lengths=F_lens.cpu(),enforce_sorted=False)
         rnn_output, rnn_hidden = self.rnn(packed_embeds)
         padded_output, lengths = torch.nn.utils.rnn.pad_packed_sequence(rnn_output,padding_value=h_pad)
         return padded_output
@@ -277,11 +277,7 @@ class DecoderWithAttention(DecoderWithoutAttention):
             F_lens: torch.LongTensor) -> torch.FloatTensor:
         # Hint: For this time, the hidden states should be initialized to zeros.
         # assert False, "Fill me"
-        # shape(S, M, 2 * H)
-        shape = h.size()
-        # scale (M, 2 * H)
-        scale = shape[1:]
-        zero_tensor = torch.zeros(scale)
+        zero_tensor = torch.zeros_like(h[0])
         return zero_tensor
 
     def get_current_rnn_input(
@@ -375,9 +371,9 @@ class DecoderWithAttention(DecoderWithoutAttention):
         # Relevant pytorch function: torch.nn.functional.cosine_similarity
         # assert False, "Fill me"
         if self.cell_type == "lstm":
-            e_t = torch.nn.functional.cosine_similarity(htilde_t[0],h)
+            e_t = torch.nn.functional.cosine_similarity(htilde_t[0].unsqueeze(0),h,dim =2)
         else:
-            e_t = torch.nn.functional.cosine_similarity(htilde_t,h)
+            e_t = torch.nn.functional.cosine_similarity(htilde_t.unsqueeze(0),h,dim = 2)
         return e_t
 
 class DecoderWithMultiHeadAttention(DecoderWithAttention):
@@ -431,12 +427,16 @@ class DecoderWithMultiHeadAttention(DecoderWithAttention):
         M = shape[1]
         Hidden = shape[2]
         h_s = self.W(h)
+        if self.cell_type == "lstm":
+            htilde_t = htilde_t[0]
         h_tilde = self.Wtilde(htilde_t)
         # Change shape of htilde_t 
         trans_htilde_t = h_tilde.view(-1,Hidden//self.heads) 
         # Change shape of h 
         trans_h = h_s.view(S,-1,Hidden//self.heads)
         trans_F_len = F_lens.repeat_interleave(self.heads)
+        if self.cell_type == "lstm":
+             trans_htilde_t = [trans_htilde_t,trans_htilde_t]
         c_t = super().attend(trans_htilde_t,trans_h,trans_F_len)
         Q_c_tm1 = self.Q(c_t.view(M,Hidden))
         return Q_c_tm1
