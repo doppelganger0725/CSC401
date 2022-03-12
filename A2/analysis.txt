@@ -1,0 +1,39 @@
+Train
+Without attention
+Epoch 1: loss=0.026766869431352168, BLEU=0.236391676624174
+Epoch 2: loss=0.019279172078064656, BLEU=0.26493355573159344
+Epoch 3: loss=0.015673523131594373, BLEU=0.2780561300517854
+Epoch 4: loss=0.012933270222339121, BLEU=0.286117697266278
+Epoch 5: loss=0.010801868098429247, BLEU=0.29301481990617406
+
+Train
+With attention,
+Epoch 1: loss=0.02493257942433148, BLEU=0.27716710935543476
+Epoch 2: loss=0.01671857929427131, BLEU=0.3061203350515895
+Epoch 3: loss=0.013064865882316024, BLEU=0.3179639855564625
+Epoch 4: loss=0.01047509040139063, BLEU=0.3242249725374958
+Epoch 5: loss=0.008590070250825628, BLEU=0.325970125136043
+
+Train
+Multiheads attention,
+Epoch 1: loss=0.02510235352770213, BLEU=0.2695186529277239
+Epoch 2: loss=0.01712377220070388, BLEU=0.30100100908844934
+Epoch 3: loss=0.013875998322100328, BLEU=0.31655106854271015
+Epoch 4: loss=0.011631236162607922, BLEU=0.3213814563420907
+Epoch 5: loss=0.009990073810857866, BLEU=0.3250455202713397
+
+Test
+Without attention,
+The average BLEU score over the test set was 0.33062484646340673
+
+Test
+With attention,
+The average BLEU score over the test set was 0.3665628291595793
+
+Test
+Multiheads attention,
+The average BLEU score over the test set was 0.3703321900800095
+
+Finding:
+The average BLEU score for the testing group is hight than the trainning group
+Algorithm with attention performs better than without attention 
