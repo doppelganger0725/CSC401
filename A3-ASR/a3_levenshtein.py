@@ -55,7 +55,7 @@ def Levenshtein(r, h):
     for i in range(1,r_len):
         for j in range(1,h_len):
             # if word match 
-            if r[i] == h[j]:
+            if r[i-1] == h[j-1]:
                 R[i,j] = R[i-1, j-1]
                 back_matrix[i,j] = 1
             # not match
@@ -76,6 +76,8 @@ def Levenshtein(r, h):
     substituition = 0
     insertion = 0
     i, j = n,m
+    print("backmatrix/n")
+    print(back_matrix)
     while not(i == 0 and j == 0):
         # word match
         if back_matrix[i,j] == 1:
@@ -93,6 +95,7 @@ def Levenshtein(r, h):
             j -= 1
         else:
             print("error")
+
     
     return wer, substituition, insertion, deletion
 
