@@ -124,25 +124,32 @@ def readfile(path):
 if __name__ == "__main__":
     google_wer = []
     kaldi_wer = []
-    with open(os.path.join(sys.path[0], "asrDiscussion.txt"), "w") as f:
-        for root, dirs, files in os.walk(dataDir):
-            for speaker in dirs:
-                Reference = readfile(os.path.join(root, speaker, "transcripts.txt"))
-                Google  = readfile(os.path.join(root, speaker, "transcripts.Google.txt"))
-                Kaldi = readfile(os.path.join(root, speaker, "transcripts.Kaldi.txt"))
+    # with open(os.path.join(sys.path[0], "asrDiscussion.txt"), "w") as f:
+    #     for root, dirs, files in os.walk(dataDir):
+    #         for speaker in dirs:
+    #             Reference = readfile(os.path.join(root, speaker, "transcripts.txt"))
+    #             Google  = readfile(os.path.join(root, speaker, "transcripts.Google.txt"))
+    #             Kaldi = readfile(os.path.join(root, speaker, "transcripts.Kaldi.txt"))
                 
-                for i in range (len(Reference)):
-                    R_script = preprocess(Reference[i])
-                    G_script = preprocess(Google[i])
-                    K_script = preprocess(Kaldi[i])
-                    gwer, gnS, gnI, gnD = Levenshtein(R_script,G_script)
-                    google_wer.append(gwer)
+    #             for i in range (len(Reference)):
+    #                 R_script = preprocess(Reference[i])
+    #                 G_script = preprocess(Google[i])
+    #                 K_script = preprocess(Kaldi[i])
+    #                 gwer, gnS, gnI, gnD = Levenshtein(R_script,G_script)
+    #                 google_wer.append(gwer)
 
-                    f.write("{} Google {} WER{} S:{}, I:{}, D:{}".format(speaker,i,gwer,gnS,gnI,gnD))
+    #                 f.write("{} Google {} WER{} S:{}, I:{}, D:{}".format(speaker,i,gwer,gnS,gnI,gnD))
                     
-                    kwer, knS, knI, knD = Levenshtein(R_script,K_script)
-                    kaldi_wer.append(kwer)
+    #                 kwer, knS, knI, knD = Levenshtein(R_script,K_script)
+    #                 kaldi_wer.append(kwer)
 
-                    f.write("{} Kaldi {} WER{} S:{}, I:{}, D:{}".format(speaker,i,kwer,knS,knI,knD))
-        f.write("Google mean: {}, std: {}".format(np.mean(google_wer),np.std(google_wer)))
-        f.write("Kaldi mean: {}, std: {}".format(np.mean(kaldi_wer),np.std(kaldi_wer)))
+    #                 f.write("{} Kaldi {} WER{} S:{}, I:{}, D:{}".format(speaker,i,kwer,knS,knI,knD))
+    #     f.write("Google mean: {}, std: {}".format(np.mean(google_wer),np.std(google_wer)))
+    #     f.write("Kaldi mean: {}, std: {}".format(np.mean(kaldi_wer),np.std(kaldi_wer)))
+    Reference = readfile("/u/cs401/A3/data/S-17A/transcripts.txt")
+    Google  = readfile("/u/cs401/A3/data/S-17A/transcripts.Google.txt")
+    for i in range(len(Reference)):
+        R_script = preprocess(Reference[i])
+        G_script = preprocess(Google[i])
+        gwer, gnS, gnI, gnD = Levenshtein(R_script,G_script)
+        google_wer.append(gwer)
