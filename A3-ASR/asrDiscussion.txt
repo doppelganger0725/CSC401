@@ -506,3 +506,8 @@ S-24D Google 11 WER 0.49473684210526314, S:21, I:5, D:21
 S-24D Kaldi 11 WER 0.35789473684210527, S:18, I:9, D:7
 Google mean: 0.3817089976189727, std: 0.13218508854006877
 Kaldi mean: 0.27141351789609686, std: 0.12105106208631382
+
+
+The most common error for both systems are substitution error.
+It is hard for the system to identify the words with similar pronunciation,which cause substitution error.
+Also some words without mean may added by the system i.e."mhm" and "wow", which cause some insertion error. 
