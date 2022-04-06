@@ -99,7 +99,7 @@ def Levenshtein(r, h):
             insertion += 1
             j -= 1
         else:
-            #
+            #error case
             print("backmatrix/n")
             print(back_matrix)
             print(i,j)
@@ -116,7 +116,7 @@ def preprocess(line):
     # remove punctuation
     no_puch = re.sub(r'[^\w\s]', '', no_tag)
     
-    # lwoer case and remove the leading token
+    # lower case and remove the leading token
     return no_puch.lower().split()[2:]
     
 
@@ -144,12 +144,12 @@ if __name__ == "__main__":
                     K_script = preprocess(Kaldi[i])
                     gwer, gnS, gnI, gnD = Levenshtein(R_script,G_script)
                     google_wer.append(gwer)
-                    f.write("{} Google {} WER: {}, S:{}, I:{}, D:{}\n".format(speaker,i,gwer,gnS,gnI,gnD))
+                    f.write("{} Google {} WER {}, S:{}, I:{}, D:{}\n".format(speaker,i,gwer,gnS,gnI,gnD))
                     
                     kwer, knS, knI, knD = Levenshtein(R_script,K_script)
                     kaldi_wer.append(kwer)
 
-                    f.write("{} Kaldi {} WER: {}, S:{}, I:{}, D:{}\n".format(speaker,i,kwer,knS,knI,knD))
+                    f.write("{} Kaldi {} WER {}, S:{}, I:{}, D:{}\n".format(speaker,i,kwer,knS,knI,knD))
         f.write("Google mean: {}, std: {}\n".format(np.mean(google_wer),np.std(google_wer)))
         f.write("Kaldi mean: {}, std: {}\n".format(np.mean(kaldi_wer),np.std(kaldi_wer)))
     # Reference = readfile("/u/cs401/A3/data/S-17A/transcripts.txt")
