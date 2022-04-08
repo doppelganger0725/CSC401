@@ -1,8 +1,10 @@
+from dataclasses import replace
 from sklearn.model_selection import train_test_split
 import numpy as np
 import os, fnmatch
 import random
 from scipy.special import logsumexp
+import sys
 dataDir = '/u/cs401/A3/data/'
 
 class theta:
@@ -80,10 +82,18 @@ def logLik( log_Bs, myTheta ):
     
 def train( speaker, X, M=8, epsilon=0.0, maxIter=20 ):
     ''' Train a model for the given speaker. Returns the theta (omega, mu, sigma)'''
+    T = X.shape[0]
     myTheta = theta( speaker, M, X.shape[1] )
     # Initialize theta
+    # random choice
+    rand = np.random.choice(T, M, replace = False)
+    myTheta.mu = X[rand]
 
-
+    # initialize identity matrix
+    myTheta.Sigma = np.identity(X.shape[1])
+    
+    # initialize omega evenly
+    myTheta.omega[:,0] = 1/M
 
     # Initialize param
     i = 0
@@ -92,11 +102,25 @@ def train( speaker, X, M=8, epsilon=0.0, maxIter=20 ):
 
     while i <= maxIter and improvement >= epsilon:
         # compute Intermediate results
+        # initalize two np arrays
+        eq1_arr = np.zeros((M,T))
+        eq2_arr = np.zeros((M,T))
+        
+        for i in range(M):
+            eq1_arr[i] = log_b_m_x(i,X,myTheta)
+        for j in range(M):
+            eq2_arr[j] = log_p_m_x(j,X,myTheta)
 
-
-        L = logLik (X, myTheta)
-        # update parameters for m componenet
-        myTheta = 0
+        L = logLik (eq1_arr, myTheta)
+        # update parameters for m componenets
+        for m in range(M):
+            # exp the log result from equation 2 for m th component
+            p_mx = np.exp(eq2_arr[m])
+            sum_p = np.sum(p_mx)
+            myTheta.omega[m] = sum_p / T
+            myTheta.mu[m] = np.matmal(p_mx, X) / sum_p
+            myTheta.Sigma[m] = np.matmal(p_mx, np.square(X)) / sum_p - np.square(myTheta.mu[m])
+    
         improvement = L - prev_L
         prev_L = L
         i = i + 1
@@ -118,7 +142,33 @@ def test( mfcc, correctID, models, k=5 ):
         the format of the log likelihood (number of decimal places, or exponent) does not matter
     '''
     bestModel = -1
-    print ('TODO')
+    log_likely_set = []
+    best_likelyhood = float("-inf")
+
+    T = mfcc.size()[0]
+    
+    #  compute all log likelyhood in a model
+    for i in range(len(models)):
+        theta = models[i]
+        M = theta.omega.size()[0]
+        # log _bs array
+        log_bs = np.zeros((M,T))
+        for i in range(M):
+            log_bs[i] = log_b_m_x(i,mfcc,theta)
+        
+        ith_likely_hood = logLik(log_bs,theta)
+        log_likely_set.append((theta.name, ith_likely_hood))
+        if ith_likely_hood > best_likelyhood:
+            bestModel = i
+            best_likelyhood = ith_likely_hood
+
+
+    log_likely_set.sort(key = lambda x: x[1], reverse=True)
+
+    print(models[correctID].name)
+    for i in range(k):
+        print(log_likely_set[i][0], log_likely_set[i][1])
+
     return 1 if (bestModel == correctID) else 0
 
 
@@ -133,6 +183,7 @@ if __name__ == "__main__":
     epsilon = 0.0
     maxIter = 20
     # train a model for each speaker, and reserve data for testing
+    sys.stdout = open('gmmLiks.txt', 'w')
     for subdir, dirs, files in os.walk(dataDir):
         for speaker in dirs:
             print( speaker )
@@ -151,8 +202,10 @@ if __name__ == "__main__":
             trainThetas.append( train(speaker, X, M, epsilon, maxIter) )
 
     # evaluate 
-    numCorrect = 0;
+    numCorrect = 0
     for i in range(0,len(testMFCCs)):
         numCorrect += test( testMFCCs[i], i, trainThetas, k ) 
     accuracy = 1.0*numCorrect/len(testMFCCs)
+    print(accuracy)
+    sys.stdout.close()
 
