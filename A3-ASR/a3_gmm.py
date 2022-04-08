@@ -114,22 +114,12 @@ def train( speaker, X, M=8, epsilon=0.0, maxIter=20 ):
 
         L = logLik (eq1_arr, myTheta)
         # update parameters for m componenets
-<<<<<<< HEAD
        
         p_mx = np.exp(eq2_arr)
         sum_p = np.sum(p_mx)
         myTheta.omega = sum_p / T
         myTheta.mu = np.matmal(p_mx, X) / sum_p
         myTheta.Sigma = np.matmal(p_mx, np.square(X)) / sum_p - np.square(myTheta.mu)
-=======
-        for m in range(M):
-            # exp the log result from equation 2 for m th component
-            p_mx = np.exp(eq2_arr[m])
-            sum_p = np.sum(p_mx)
-            myTheta.omega[m] = sum_p / T
-            myTheta.mu[m] = np.matmul(p_mx, X) / sum_p
-            myTheta.Sigma[m] = np.matmul(p_mx, np.square(X)) / sum_p - np.square(myTheta.mu[m])
->>>>>>> 5dfbb7a5d2d0039e3b84d1589cf7b133901394a9
     
         improvement = L - prev_L
         prev_L = L
