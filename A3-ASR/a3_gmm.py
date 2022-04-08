@@ -26,9 +26,9 @@ def log_b_m_x( m, x, myTheta, preComputedForM=[]):
     mu = myTheta.mu
     omega = myTheta.omega
     Sigma = myTheta.Sigma
-    d = Sigma.size()[1]
-    log_numerator = -0.5 * np.sum(np.square(x - mu[m])/Sigma[m],axis = 1)
-    pi_term = (0.5 * d) * np.log(2 *np.pi)
+    d = Sigma.shape[1]
+    log_numerator = -0.5 * np.sum(np.square(x - mu[m]) / Sigma[m],axis=1)
+    pi_term = (0.5 * d) * np.log(2 * np.pi)
     #  sum of log product from 1 to d 
     sqroot_term = 0.5 * np.sum(np.log(Sigma[m]))
     log_denominator = pi_term + sqroot_term
@@ -45,17 +45,18 @@ def log_p_m_x( m, x, myTheta):
     mu = myTheta.mu
     omega = myTheta.omega
     Sigma = myTheta.Sigma
-    M = omega.size()[0]
+    M = omega.shape[0]
+    T = x.shape[0]
     # the M th log_b
     log_bmx = log_b_m_x(m,x,myTheta)
     log_numerator = np.log(omega[m]) + log_bmx
     
     # collection of M numbers of logb  
-    log_bms = []
+    log_bms = np.zeros((M,T))
     for i in range(M):
         log_bms[i] = log_b_m_x(i,x,myTheta)
     log_arr = np.array(log_bms)
-    log_denominator = logsumexp(np.log(omega[:,0]) + log_arr)
+    log_denominator = logsumexp(np.log(omega) + log_arr)
     
     result = log_numerator - log_denominator
     return result 
@@ -90,7 +91,7 @@ def train( speaker, X, M=8, epsilon=0.0, maxIter=20 ):
     myTheta.mu = X[rand]
 
     # initialize identity matrix
-    myTheta.Sigma = np.identity(X.shape[1])
+    myTheta.Sigma= np.ones((M,X.shape[1]))
     
     # initialize omega evenly
     myTheta.omega[:,0] = 1/M
@@ -118,8 +119,8 @@ def train( speaker, X, M=8, epsilon=0.0, maxIter=20 ):
             p_mx = np.exp(eq2_arr[m])
             sum_p = np.sum(p_mx)
             myTheta.omega[m] = sum_p / T
-            myTheta.mu[m] = np.matmal(p_mx, X) / sum_p
-            myTheta.Sigma[m] = np.matmal(p_mx, np.square(X)) / sum_p - np.square(myTheta.mu[m])
+            myTheta.mu[m] = np.matmul(p_mx, X) / sum_p
+            myTheta.Sigma[m] = np.matmul(p_mx, np.square(X)) / sum_p - np.square(myTheta.mu[m])
     
         improvement = L - prev_L
         prev_L = L
@@ -145,12 +146,12 @@ def test( mfcc, correctID, models, k=5 ):
     log_likely_set = []
     best_likelyhood = float("-inf")
 
-    T = mfcc.size()[0]
+    T = mfcc.shape[0]
     
     #  compute all log likelyhood in a model
     for i in range(len(models)):
         theta = models[i]
-        M = theta.omega.size()[0]
+        M = theta.omega.shape[0]
         # log _bs array
         log_bs = np.zeros((M,T))
         for i in range(M):
