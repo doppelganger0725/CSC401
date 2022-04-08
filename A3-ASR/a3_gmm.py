@@ -91,10 +91,10 @@ def train( speaker, X, M=8, epsilon=0.0, maxIter=20 ):
     myTheta.mu = X[rand]
 
     # initialize identity matrix
-    myTheta.Sigma= np.ones((M,X.shape[1]))
+    myTheta.Sigma= np.identity(X.shape[1])
     
     # initialize omega evenly
-    myTheta.omega[:,0] = 1/M
+    myTheta.omega = np.full((M,1),1/M)
 
     # Initialize param
     i = 0
