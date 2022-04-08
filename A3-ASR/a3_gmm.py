@@ -153,8 +153,8 @@ def test( mfcc, correctID, models, k=5 ):
         M = theta.omega.shape[0]
         # log _bs array
         log_bs = np.zeros((M,T))
-        for i in range(M):
-            log_bs[i] = log_b_m_x(i,mfcc,theta)
+        for j in range(M):
+            log_bs[j] = log_b_m_x(j,mfcc,theta)
         
         ith_likely_hood = logLik(log_bs,theta)
         log_likely_set.append((theta.name, ith_likely_hood))
