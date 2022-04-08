@@ -113,13 +113,12 @@ def train( speaker, X, M=8, epsilon=0.0, maxIter=20 ):
 
         L = logLik (eq1_arr, myTheta)
         # update parameters for m componenets
-        for m in range(M):
-            # exp the log result from equation 2 for m th component
-            p_mx = np.exp(eq2_arr[m])
-            sum_p = np.sum(p_mx)
-            myTheta.omega[m] = sum_p / T
-            myTheta.mu[m] = np.matmal(p_mx, X) / sum_p
-            myTheta.Sigma[m] = np.matmal(p_mx, np.square(X)) / sum_p - np.square(myTheta.mu[m])
+       
+        p_mx = np.exp(eq2_arr)
+        sum_p = np.sum(p_mx)
+        myTheta.omega = sum_p / T
+        myTheta.mu = np.matmal(p_mx, X) / sum_p
+        myTheta.Sigma = np.matmal(p_mx, np.square(X)) / sum_p - np.square(myTheta.mu)
     
         improvement = L - prev_L
         prev_L = L
@@ -162,7 +161,7 @@ def test( mfcc, correctID, models, k=5 ):
             bestModel = i
             best_likelyhood = ith_likely_hood
 
-
+    # sorted
     log_likely_set.sort(key = lambda x: x[1], reverse=True)
 
     print(models[correctID].name)
@@ -176,7 +175,7 @@ if __name__ == "__main__":
 
     trainThetas = []
     testMFCCs = []
-    print('TODO: you will need to modify this main block for Sec 2.3')
+    # print('TODO: you will need to modify this main block for Sec 2.3')
     d = 13
     k = 5  # number of top speakers to display, <= 0 if none
     M = 8
